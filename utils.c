@@ -247,6 +247,7 @@ void enemy_fire(bool* exit_flag, char** grid, int height, int width)
     extern node_t* game_log;
     extern pos_t enemy_pos;
     extern pos_t player_pos;
+    extern unsigned SLEEP_DURATION;
 
     /* Laser vector. */
     pos_t laser_pos;
@@ -340,7 +341,7 @@ void enemy_fire(bool* exit_flag, char** grid, int height, int width)
             /* Log game. */
             insert_last(&game_log, grid, height, width);
             
-            msleep(500);    /* Sleep for 500 ms. */
+            msleep(SLEEP_DURATION);
             grid[laser_pos.x][laser_pos.y] = ' ';
         }
     }
@@ -351,6 +352,7 @@ void player_fire(bool* exit_flag, char** grid, int height, int width)
     extern node_t* game_log;
     extern pos_t enemy_pos;
     extern pos_t player_pos;
+    extern unsigned SLEEP_DURATION;
 
     /* Laser vector. */
     pos_t laser_pos;
@@ -444,7 +446,7 @@ void player_fire(bool* exit_flag, char** grid, int height, int width)
             /* Log game. */
             insert_last(&game_log, grid, height, width);
             
-            msleep(500);    /* Sleep for 500 ms. */
+            msleep(SLEEP_DURATION);
             grid[laser_pos.x][laser_pos.y] = ' ';
         }
     }

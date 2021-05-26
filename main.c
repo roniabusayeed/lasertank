@@ -9,6 +9,9 @@ pos_t player_pos, enemy_pos;
 /* An empty game log. */
 node_t* game_log = NULL;
 
+/* Modify this variable to adjust a preferable laser speed. */
+const unsigned SLEEP_DURATION = 250U; /* In milliseconds. */
+
 /* Entry point of the program. */
 int main(int argc, char** argv)
 {
