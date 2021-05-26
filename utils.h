@@ -84,6 +84,14 @@ void write_map(char** grid, int height, int width, FILE* stream);
  * @param width number of columns in the grid. /*/
 void enemy_fire(bool* exit_flag, char** grid, int height, int width);
 
+/** This function is called when the player is in the line of sight
+ * of the enemy tank. 
+ * @param exit_flag exit flag of the program.
+ * @param grid pointer to the 2D array of character representing map.
+ * @param height number of rows in the grid.
+ * @param width number of columns in the grid. /*/
+void player_fire(bool* exit_flag, char** grid, int height, int width);
+
 /** Gets a valid menu choice from the user. */
 char menu();
 

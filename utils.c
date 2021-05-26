@@ -345,3 +345,107 @@ void enemy_fire(bool* exit_flag, char** grid, int height, int width)
         }
     }
 }
+
+void player_fire(bool* exit_flag, char** grid, int height, int width)
+{
+    extern node_t* game_log;
+    extern pos_t enemy_pos;
+    extern pos_t player_pos;
+
+    /* Laser vector. */
+    pos_t laser_pos;
+    char laser_dir;
+
+    /* Initial position of the laser. */
+    laser_pos.x = player_pos.x;
+    laser_pos.y = player_pos.y;
+
+    /* Initial direction of the laser. */
+    laser_dir = get_player_dir(grid[player_pos.x][player_pos.y]);
+
+    /* Laser loop. */
+    while (true)
+    {
+        /* Advance. */
+        if (laser_dir == 'u')
+        {
+            laser_pos.x--;
+        }
+        else if (laser_dir == 'd')
+        {
+            laser_pos.x++;
+        }
+        else if (laser_dir == 'l')
+        {
+            laser_pos.y--;
+        }
+        else if (laser_dir == 'r')
+        {
+            laser_pos.y++;
+        }
+
+        /* If laser is out of bounds, break. */
+        if (laser_pos.x < 0 || laser_pos.x >= height 
+        || laser_pos.y < 0 || laser_pos.y >= width)
+        {
+            break;
+        }
+
+        /* If laser hits the mirror, change direction. */
+        if (is_mirror(grid[laser_pos.x][laser_pos.y]))
+        {
+            /* Get mirror direction: (forward or backward slash) */
+            char mirror_dir;
+            mirror_dir = get_mirror_dir(grid[laser_pos.x][laser_pos.y]);
+
+            /* Forward mirror. */
+            if (mirror_dir == 'f')
+            {
+                /* Change final laser direction based on its initial direction. */
+                if (laser_dir == 'd') laser_dir = 'l';
+                else if (laser_dir == 'u') laser_dir = 'r';
+                else if (laser_dir == 'r') laser_dir = 'u';
+                else if (laser_dir == 'l') laser_dir = 'd';
+            }
+            /* Backward mirror. */
+            else if (mirror_dir == 'b')
+            {
+                if (laser_dir == 'd') laser_dir = 'r';
+                else if (laser_dir == 'u') laser_dir = 'l';
+                else if (laser_dir == 'r') laser_dir = 'd';
+                else if (laser_dir == 'l') laser_dir = 'u';
+            }
+        }
+
+        /* If laser hits the enemy tank, declare win and exit. */
+        else if (laser_pos.x == enemy_pos.x && laser_pos.y == enemy_pos.y)
+        {
+            fprintf(stdout, "You win!\n");
+            *exit_flag = true;
+            break;
+        }
+        else
+        {
+            /* The laser is inside the grid, it didn't hit a mirror, and
+            and it didn't hit an enemy tank. */
+
+            /* Print laser beam. */
+            if (laser_dir == 'u' || laser_dir == 'd')
+            {
+                grid[laser_pos.x][laser_pos.y] = '|';
+            }
+            else
+            {
+                grid[laser_pos.x][laser_pos.y] = '-';
+            }
+            system("clear");
+            write_map(grid, height, width, stdout);
+            
+            /* Log game. */
+            insert_last(&game_log, grid, height, width);
+            
+            msleep(500);    /* Sleep for 500 ms. */
+            grid[laser_pos.x][laser_pos.y] = ' ';
+        }
+    }
+}
