@@ -3,6 +3,8 @@
 #include <assert.h>
 #include <stdbool.h>
 #include "linkedlist.h"
+#include "sleep.h"
+#include "colors.h"
 
 /** Returns the character representation of the player for
  * a given direction of the player. */
@@ -102,6 +104,10 @@ int main(int argc, char** argv)
     /* Pointer to he map. */
     char** grid = NULL;
 
+    /* Flag to indicate whether or not the game should exit. */
+    bool exit_flag;
+    exit_flag = false;
+
     /* Ensure proper usage. */
     if (argc != 3)
     {
@@ -133,7 +139,7 @@ int main(int argc, char** argv)
     initialize_map(grid, height, width, map);
 
     /* Program loop. */
-    while (true)
+    while (!exit_flag)
     {
         /* Menu choice from user. */
         char menu_choice;
@@ -253,7 +259,101 @@ int main(int argc, char** argv)
         /* Shoot laser. */
         else if (menu_choice == 'f')
         {
+            /* Laser vector. */
+            pos_t laser_pos;
+            char laser_dir;
 
+            /* Initial position of the laser. */
+            laser_pos.x = player_pos.x;
+            laser_pos.y = player_pos.y;
+
+            /* Initial direction of the laser. */
+            laser_dir = get_player_dir(grid[player_pos.x][player_pos.y]);
+
+            /* Laser loop. */
+            while (true)
+            {
+                /* Advance. */
+                if (laser_dir == 'u')
+                {
+                    laser_pos.x--;
+                }
+                else if (laser_dir == 'd')
+                {
+                    laser_pos.x++;
+                }
+                else if (laser_dir == 'l')
+                {
+                    laser_pos.y--;
+                }
+                else if (laser_dir == 'r')
+                {
+                    laser_pos.y++;
+                }
+
+                /* If laser is out of bounds, break. */
+                if (laser_pos.x < 0 || laser_pos.x >= height 
+                || laser_pos.y < 0 || laser_pos.y >= width)
+                {
+                    break;
+                }
+
+                /* If laser hits the mirror, change direction. */
+                if (is_mirror(grid[laser_pos.x][laser_pos.y]))
+                {
+                    /* Get mirror direction: (forward or backward slash) */
+                    char mirror_dir;
+                    mirror_dir = get_mirror_dir(grid[laser_pos.x][laser_pos.y]);
+
+                    /* Forward mirror. */
+                    if (mirror_dir == 'f')
+                    {
+                        /* Change final laser direction based on its initial direction. */
+                        if (laser_dir == 'd') laser_dir = 'l';
+                        else if (laser_dir == 'u') laser_dir = 'r';
+                        else if (laser_dir == 'r') laser_dir = 'd';
+                        else laser_dir = 'u';
+                    }
+                    /* Backward mirror. */
+                    else
+                    {
+                        if (laser_dir == 'd') laser_dir = 'r';
+                        else if (laser_dir == 'u') laser_dir = 'l';
+                        else if (laser_dir == 'r') laser_dir = 'u';
+                        else laser_dir = 'd';
+                    }
+                }
+
+                /* If laser hits the enemy tank, declare win and exit. */
+                else if (laser_pos.x == enemy_pos.x && laser_pos.y == enemy_pos.y)
+                {
+                    fprintf(stdout, "Player wis!\n");
+                    exit_flag = true;
+                    break;
+                }
+                else
+                {
+                    /* The laser is inside the grid, it didn't hit a mirror, and
+                    and it didn't hit an enemy tank. */
+
+                    /* Print laser beam. */
+                    if (laser_dir == 'u' || laser_dir == 'd')
+                    {
+                        grid[laser_pos.x][laser_pos.y] = '|';
+                    }
+                    else
+                    {
+                        grid[laser_pos.x][laser_pos.y] = '-';
+                    }
+                    write_map(grid, height, width, stdout);
+                    
+                    /* Log game. */
+                    insert_last(&game_log, grid, height, width);
+                    
+                    msleep(500);    /* Sleep for 500 ms. */
+                    grid[laser_pos.x][laser_pos.y] = ' ';
+                }
+            }
         }
         /* Save the log. */
         else if (menu_choice == 'l')
@@ -263,9 +363,14 @@ int main(int argc, char** argv)
         }
     }
 
-    /* Free memory. */
+    /* Free memory associated with map/grid. */
     delete_map(grid, height);
     grid = NULL;    /* Just to be safe. */
+
+    /* Write the most recent log to the given log file. */
+    write_list(game_log, log_filename);
+
+    /* Free heap memory associated with game_log. */
     free_list(game_log);
     game_log = NULL;    /* Just to be safe. */
 
@@ -477,7 +582,26 @@ void write_map(char** grid, int height, int width, FILE* stream)
         /* Iterate over the columns. */
         for (j = 0; j < width; j++)
         {
-            fprintf(stream, "%c", grid[i][j]);
+            char grid_cell;
+            grid_cell = grid[i][j];
+
+            /* If the grid cell has a laser beam, write it with color. */
+            if (grid_cell == '|' || grid_cell == '-')
+            {
+                /* Print colored output only when in terminal. */
+                if (stream == stdout || stream == stderr)
+                {
+                    fprintf (stream, FRED("%c"), grid_cell);
+                }
+                else
+                {
+                    fprintf (stream, "%c", grid_cell);
+                }
+            }
+            else
+            {
+                fprintf(stream, "%c", grid_cell);
+            }
         }
         fprintf(stream, "*\n");
     }
