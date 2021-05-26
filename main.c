@@ -71,6 +71,18 @@ char** get_copy(char** grid, int height, int width);
  * @param map file pointer for the input file. */
 void initialize_map(char** grid, int height, int width, FILE* map);
 
+/** Gets a valid menu choice from the user. */
+char menu();
+
+/** Defines a (x,y) position in 2-D map. */
+typedef struct
+{
+    int x, y;
+} pos_t;
+
+/* Variable to keep trach of player and enemy tanks. */
+static pos_t player_pos, enemy_pos;
+
 /* Entry point of the program. */
 int main(int argc, char** argv)
 {
@@ -126,12 +138,129 @@ int main(int argc, char** argv)
     /* Initialize the map from input file. */
     initialize_map(grid, height, width, map);
 
-    /* Display the map. */
-    display_map(grid, height, width);
+    /* Program loop. */
+    while (true)
+    {
+        /* Menu choice from user. */
+        char menu_choice;
+
+        display_map(grid, height, width);
+        menu_choice = menu();
+        fprintf(stdout, "You chose: %c\n", menu_choice);
+
+        /* Go/face up. */
+        if (menu_choice == 'w')
+        {
+            /* If the player is not already facing upward. */
+            if (get_player_dir(grid[player_pos.x][player_pos.y]) != 'u')
+            {
+                /* Face upward. */
+                grid[player_pos.x][player_pos.y] = get_player('u');
+            }
+            /* Attemp to move one step upward. */
+            else
+            {
+                /* The player cannot go to the same position as that of the mirror. */
+                /* The player cannot go out of the boundary of the map. */
+                if (player_pos.x - 1 >= 0 && 
+                !is_mirror(grid[player_pos.x - 1][player_pos.y]))
+                {
+                    /* Move the player one step upward. */
+                    grid[player_pos.x - 1][player_pos.y] = grid[player_pos.x][player_pos.y];
+                    grid[player_pos.x][player_pos.y] = ' ';
+                    player_pos.x--;
+                }
+            }
+        }
+        /* Go/face down. */
+        else if (menu_choice == 's')
+        {
+            /* If the player is not already facing downward. */
+            if (get_player_dir(grid[player_pos.x][player_pos.y]) != 'd')
+            {
+                /* Face downward. */
+                grid[player_pos.x][player_pos.y] = get_player('d');
+            }
+            /* Attemp to move one step downward. */
+            else
+            {
+                /* The player cannot go to the same position as that of the mirror. */
+                /* The player cannot go out of the boundary of the map. */
+                if (player_pos.x + 1 < height &&
+                !is_mirror(grid[player_pos.x + 1][player_pos.y]))
+                {
+                    /* Move the player one step downward. */
+                    grid[player_pos.x + 1][player_pos.y] = grid[player_pos.x][player_pos.y];
+                    grid[player_pos.x][player_pos.y] = ' ';
+                    player_pos.x++;
+                }
+            }
+        }
+        /* Go/face right. */
+        else if (menu_choice == 'd')
+        {
+            /* If the player is not already facing rightward. */
+            if (get_player_dir(grid[player_pos.x][player_pos.y]) != 'r')
+            {
+                /* Face rightward. */
+                grid[player_pos.x][player_pos.y] = get_player('r');
+            }
+            /* Attemp to move one step rightward. */
+            else
+            {
+                /* The player cannot go to the same position as that of the mirror. */
+                /* The player cannot go out of the boundary of the map. */
+                if (player_pos.y + 1 < width &&
+                !is_mirror(grid[player_pos.x][player_pos.y + 1]))
+                {
+                    /* Move the player one step rightward. */
+                    grid[player_pos.x][player_pos.y + 1] = grid[player_pos.x][player_pos.y];
+                    grid[player_pos.x][player_pos.y] = ' ';
+                    player_pos.y++;
+                }
+            }
+        }
+        /* Go/face left. */
+        else if (menu_choice == 'a')
+        {
+            /* If the player is not already facing leftward. */
+            if (get_player_dir(grid[player_pos.x][player_pos.y]) != 'l')
+            {
+                /* Face leftward. */
+                grid[player_pos.x][player_pos.y] = get_player('l');
+            }
+            /* Attemp to move one step leftward. */
+            else
+            {
+                /* The player cannot go to the same position as that of the mirror. */
+                /* The player cannot go out of the boundary of the map. */
+                if (player_pos.y - 1 >= 0 &&
+                !is_mirror(grid[player_pos.x][player_pos.y - 1]))
+                {
+                    /* Move the player one step leftward. */
+                    grid[player_pos.x][player_pos.y - 1] = grid[player_pos.x][player_pos.y];
+                    grid[player_pos.x][player_pos.y] = ' ';
+                    player_pos.y--;
+                }
+            }
+        }
+        /* Shoot laser. */
+        else if (menu_choice == 'f')
+        {
+
+        }
+        /* Save the log. */
+        else if (menu_choice == 'l')
+        {
+            
+        }
+    }
+    
 
 
     /* Free memory. */
     delete_map(grid, height);
+    grid = NULL;    /* Just to be safe. */
 
     /* Close files. */
     fclose(map);
@@ -181,12 +310,17 @@ void initialize_map(char** grid, int height, int width, FILE* map)
     fscanf(map, "%d%d", &x, &y);
     fscanf(map, " %c", &dir);
     grid[x][y] = get_player(dir);
+    player_pos.x = x;
+    player_pos.y = y;
 
     /* Read enemy data. */
     fscanf(map, "%d%d", &x, &y);
     fscanf(map, " %c", &dir);
     grid[x][y] = get_player(dir);   /* As enemy tank is represented 
                                     with same symbol as the symbol of player. */
+    enemy_pos.x = x;
+    enemy_pos.y = y;
+
     /* As long as there are mirrors in input file. */
     while ((status = fscanf(map, "%d%d %c", &x, &y, &dir)) != EOF)
     {
@@ -306,4 +440,46 @@ char get_player(char dir)
         case 'l': return '<';   /* Left. */
         default: assert(false); /* Invalid direction argument. */
     }
+}
+
+char** get_copy(char** grid, int height, int width)
+{
+    /* Loop control variable. */
+    int i, j;
+
+    /* Allocate memory for new map/grid. */
+    char** new_grid = malloc(sizeof(char*) * height);
+    for (i = 0; i < height; i++)
+    {
+        new_grid[i] = malloc(sizeof(char) * width);
+    }
+
+    /* Copy each grid cell over to the new grid. */
+    for (i = 0; i < height; i++)
+    {
+        for (j = 0; j < width; j++)
+        {
+            new_grid[i][j] = grid[i][j];
+        }
+    }
+    
+    /* Return copy. */
+    return new_grid;
+}
+
+char menu()
+{
+    char choice;
+    do {
+        fprintf(stdout, "w to go/face up\n");
+        fprintf(stdout, "s to go/face down\n");
+        fprintf(stdout, "a to go/face left\n");
+        fprintf(stdout, "d to go/face right\n");
+        fprintf(stdout, "f to shoot laser\n");
+        fprintf(stdout, "l to save the log\n");
+        fprintf(stdout, "action: ");
+        fscanf(stdin, " %c", &choice);
+    } while (choice != 'w' && choice != 's' && choice != 'a' && choice != 'd'
+    && choice != 'f' && choice != 'l');
+    return choice;
 }
