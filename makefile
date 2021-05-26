@@ -1,8 +1,8 @@
 CC=gcc
-CFLAGS=-Wall -pedantic -Werror -std=c89 -g
+CFLAGS=-Wall -pedantic -Werror -std=c89
 APP=laserTank
 
-$(APP): main.c linkedlist.o sleep.o
+${APP}: main.c linkedlist.o sleep.o
 	${CC} ${CFLAGS} -o $@ $^
 
 linkedlist.o: linkedlist.c linkedlist.h
