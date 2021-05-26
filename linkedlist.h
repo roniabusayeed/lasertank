@@ -6,6 +6,8 @@
 typedef struct node
 {
     char** grid;
+    int height;
+    int width;
     struct node* next;
 } node_t;
 
@@ -14,8 +16,10 @@ typedef struct node
  * @param list address of the pointer to the head of the linked list
  * where to insert the copy of grid. 
  * @param grid pointer to the 2D array of characters (representing a map)
- * which is to be copied into the list. */
-void insert_last(node_t** list, char** grid);
+ * which is to be copied into the list. 
+ * @param height number of rows in the grid. 
+ * @param width number of columns in the grid. */
+void insert_last(node_t** list, char** grid, int height, int width);
 
 /** Writes the contents of the linked list to a given file.
  * @param list pointer to the head of the linked list whose content
