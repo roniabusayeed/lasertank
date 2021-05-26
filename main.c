@@ -185,6 +185,7 @@ int main(int argc, char** argv)
             break;
         }
 
+        system("clear");
         write_map(grid, height, width, stdout);
         menu_choice = menu();
 
@@ -389,6 +390,7 @@ int main(int argc, char** argv)
                     {
                         grid[laser_pos.x][laser_pos.y] = '-';
                     }
+                    system("clear");
                     write_map(grid, height, width, stdout);
                     
                     /* Log game. */
@@ -746,6 +748,7 @@ void enemy_fire(bool* exit_flag, char** grid, int height, int width)
             {
                 grid[laser_pos.x][laser_pos.y] = '-';
             }
+            system("clear");
             write_map(grid, height, width, stdout);
             
             /* Log game. */
