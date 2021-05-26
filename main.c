@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <stdbool.h>
+#include "linkedlist.h"
 
 /** Returns the character representation of the player for
  * a given direction of the player. */
@@ -40,13 +41,6 @@ char get_mirror_dir(char mirror);
 void delete_map(char** grid, int height);
 
 
-/** Displays the 2-D map on standard output. 
- * @param grid pointer to the 2-D array representing the map.
- * @param height number of rows in the map.
- * @param width number of columns in the map. */
-void display_map(char** grid, int height, int width);
-
-
 /** Allocates memory for a map of given height and width and
  * returns a pointer to the 2D array (essentially representing 
  * a grid).
@@ -71,6 +65,13 @@ char** get_copy(char** grid, int height, int width);
  * @param map file pointer for the input file. */
 void initialize_map(char** grid, int height, int width, FILE* map);
 
+/** Writes a map to the a file stream. 
+ * @param grid pointer to the 2D array of characters representing a map.
+ * @param height number of rows in the grid.
+ * @param width number of columns in the grid.
+ * @param stream file stream where the map is to be written. */
+void write_map(char** grid, int height, int width, FILE* stream);
+
 /** Gets a valid menu choice from the user. */
 char menu();
 
@@ -83,6 +84,9 @@ typedef struct
 /* Variable to keep trach of player and enemy tanks. */
 static pos_t player_pos, enemy_pos;
 
+/* An empty game log. */
+static node_t* game_log = NULL;
+
 /* Entry point of the program. */
 int main(int argc, char** argv)
 {
@@ -90,7 +94,6 @@ int main(int argc, char** argv)
     char const* map_filename = NULL;
     const char* log_filename = NULL;
     FILE* map = NULL;
-    FILE* log = NULL;
     
     /* Map dimensions. */
     int height; /* Number of rows. */
@@ -120,15 +123,6 @@ int main(int argc, char** argv)
         return EXIT_FAILURE;
     }
 
-    /* Open log file for writing. */
-    log = fopen(log_filename, "w");
-    if (! log)
-    {
-        fprintf(stderr, "Couldn't open %s for writing.\n", log_filename);
-        return EXIT_FAILURE;
-    }
-
-
     /* Read height and width of the map. */
     fscanf(map, "%d%d", &height, &width);
 
@@ -144,7 +138,7 @@ int main(int argc, char** argv)
         /* Menu choice from user. */
         char menu_choice;
 
-        display_map(grid, height, width);
+        write_map(grid, height, width, stdout);
         menu_choice = menu();
         fprintf(stdout, "You chose: %c\n", menu_choice);
 
@@ -171,6 +165,9 @@ int main(int argc, char** argv)
                     player_pos.x--;
                 }
             }
+            
+            /* Log game. */
+            insert_last(&game_log, grid, height, width);
         }
         /* Go/face down. */
         else if (menu_choice == 's')
@@ -195,6 +192,9 @@ int main(int argc, char** argv)
                     player_pos.x++;
                 }
             }
+
+            /* Log game. */
+            insert_last(&game_log, grid, height, width);
         }
         /* Go/face right. */
         else if (menu_choice == 'd')
@@ -219,6 +219,9 @@ int main(int argc, char** argv)
                     player_pos.y++;
                 }
             }
+
+            /* Log game. */
+            insert_last(&game_log, grid, height, width);
         }
         /* Go/face left. */
         else if (menu_choice == 'a')
@@ -243,6 +246,9 @@ int main(int argc, char** argv)
                     player_pos.y--;
                 }
             }
+
+            /* Log game. */
+            insert_last(&game_log, grid, height, width);
         }
         /* Shoot laser. */
         else if (menu_choice == 'f')
@@ -252,19 +258,19 @@ int main(int argc, char** argv)
         /* Save the log. */
         else if (menu_choice == 'l')
         {
-            
+            /* Write the most recent log to the given log file. */
+            write_list(game_log, log_filename);
         }
     }
-    
-
 
     /* Free memory. */
     delete_map(grid, height);
     grid = NULL;    /* Just to be safe. */
+    free_list(game_log);
+    game_log = NULL;    /* Just to be safe. */
 
-    /* Close files. */
+    /* Close file(s). */
     fclose(map);
-    fclose(log);
 
     /* Success. */
     return EXIT_SUCCESS;
@@ -342,38 +348,6 @@ void delete_map(char** grid, int height)
 
     /* Free memory for the grid itself.*/
     free(grid);
-}
-
-void display_map(char** grid, int height, int width)
-{
-    /* Loop counter variables. */
-    int i, j;
-    
-    /* Print top border. */
-    for (j = 0; j < width + 2; j++)
-    {
-        fprintf(stdout, "*");
-    }
-    fprintf(stdout, "\n");
-
-    /* Iterate over the rows. */
-    for (i = 0; i < height; i++)
-    {
-        fprintf(stdout, "*");
-        /* Iterate over the columns. */
-        for (j = 0; j < width; j++)
-        {
-            fprintf(stdout, "%c", grid[i][j]);
-        }
-        fprintf(stdout, "*\n");
-    }
-
-    /* Print bottom border. */
-    for (j = 0; j < width + 2; j++)
-    {
-        fprintf(stdout, "*");
-    }
-    fprintf(stdout, "\n");
 }
 
 char get_mirror_dir(char mirror)
@@ -482,4 +456,36 @@ char menu()
     } while (choice != 'w' && choice != 's' && choice != 'a' && choice != 'd'
     && choice != 'f' && choice != 'l');
     return choice;
+}
+
+void write_map(char** grid, int height, int width, FILE* stream)
+{
+    /* Loop counter variables. */
+    int i, j;
+    
+    /* Print top border. */
+    for (j = 0; j < width + 2; j++)
+    {
+        fprintf(stream, "*");
+    }
+    fprintf(stream, "\n");
+
+    /* Iterate over the rows. */
+    for (i = 0; i < height; i++)
+    {
+        fprintf(stream, "*");
+        /* Iterate over the columns. */
+        for (j = 0; j < width; j++)
+        {
+            fprintf(stream, "%c", grid[i][j]);
+        }
+        fprintf(stream, "*\n");
+    }
+
+    /* Print bottom border. */
+    for (j = 0; j < width + 2; j++)
+    {
+        fprintf(stream, "*");
+    }
+    fprintf(stream, "\n");
 }
