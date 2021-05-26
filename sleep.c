@@ -1,26 +1,10 @@
 #include "sleep.h"
+#include <sys/time.h>
 
-#include <time.h>
-#include <errno.h>
-#include <aio.h>
-
-int msleep(long msec)
+int msleep(long tms)
 {
-    struct timespec ts;
-    int res;
-
-    if (msec < 0)
-    {
-        errno = EINVAL;
-        return -1;
-    }
-
-    ts.tv_sec = msec / 1000;
-    ts.tv_nsec = (msec % 1000) * 1000000;
-
-    do {
-        res = nanosleep(&ts, &ts);
-    } while (res && errno == EINTR);
-
-    return res;
+    struct timeval tv;
+    tv.tv_sec  = tms / 1000;
+    tv.tv_usec = (tms % 1000) * 1000;
+    return select (0, NULL, NULL, NULL, &tv);
 }
