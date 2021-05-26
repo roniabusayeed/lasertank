@@ -13,6 +13,37 @@ pos_t player_pos, enemy_pos;
 /* An empty game log. */
 node_t* game_log = NULL;
 
+/** Returns true if the player is in the line of sight of the enemy tank.
+ * return false otherwise. */
+bool in_line_of_sight(pos_t player_pos, pos_t enemy_pos, char** grid)
+{
+    if (player_pos.x == enemy_pos.x)
+    {
+        /* Player is in the horizontal line of sight of the enemy tank. */
+        char enemy_dir;
+        enemy_dir = get_player_dir(grid[enemy_pos.x][enemy_pos.y]);
+        if ((enemy_dir == 'r' && enemy_pos.y < player_pos.y) ||
+        (enemy_dir == 'l' && player_pos.y < enemy_pos.y))
+        {
+            /* Enemy fires. */
+            return true;
+        }
+    }
+    else if (player_pos.y == enemy_pos.y)
+    {
+        /* Player is in the vertical line of sight of the enemy tank. */
+        char enemy_dir;
+        enemy_dir = get_player_dir(grid[enemy_pos.x][enemy_pos.y]);
+        if ((enemy_dir == 'u' && player_pos.x < enemy_pos.x) ||
+        (enemy_dir == 'd' && enemy_pos.x < player_pos.x))
+        {
+            /* Enemy fires. */
+            return true;
+        }
+    }
+    return false;
+}
+
 /* Entry point of the program. */
 int main(int argc, char** argv)
 {
@@ -25,7 +56,7 @@ int main(int argc, char** argv)
     int height; /* Number of rows. */
     int width;  /* Number of columns. */
 
-    /* Pointer to he map. */
+    /* Pointer to the map. */
     char** grid = NULL;
 
     /* Flag to indicate whether or not the game should exit. */
@@ -70,29 +101,9 @@ int main(int argc, char** argv)
 
         /* If the player is in the line of sight of the enemy tank, the enemy
         tank fires at the player.*/
-        if (player_pos.x == enemy_pos.x)
+        if (in_line_of_sight(player_pos, enemy_pos, grid))
         {
-            /* Player is in the horizontal line of sight of the enemy tank. */
-            char enemy_dir;
-            enemy_dir = get_player_dir(grid[enemy_pos.x][enemy_pos.y]);
-            if ((enemy_dir == 'r' && enemy_pos.y < player_pos.y) ||
-            (enemy_dir == 'l' && player_pos.y < enemy_pos.y))
-            {
-                /* Enemy fires. */
-                enemy_fire(&exit_flag, grid, height, width);
-            }
-        }
-        else if (player_pos.y == enemy_pos.y)
-        {
-            /* Player is in the vertical line of sight of the enemy tank. */
-            char enemy_dir;
-            enemy_dir = get_player_dir(grid[enemy_pos.x][enemy_pos.y]);
-            if ((enemy_dir == 'u' && player_pos.x < enemy_pos.x) ||
-            (enemy_dir == 'd' && enemy_pos.x < player_pos.x))
-            {
-                /* Enemy fires. */
-                enemy_fire(&exit_flag, grid, height, width);
-            }
+            enemy_fire(&exit_flag, grid, height, width);
         }
 
         /* Check if exit flag is set by enemy tank. */
@@ -101,6 +112,7 @@ int main(int argc, char** argv)
             break;
         }
 
+        /* Get menu choice from the user. */
         system("clear");
         write_map(grid, height, width, stdout);
         menu_choice = menu();
