@@ -311,16 +311,16 @@ int main(int argc, char** argv)
                         /* Change final laser direction based on its initial direction. */
                         if (laser_dir == 'd') laser_dir = 'l';
                         else if (laser_dir == 'u') laser_dir = 'r';
-                        else if (laser_dir == 'r') laser_dir = 'd';
-                        else laser_dir = 'u';
+                        else if (laser_dir == 'r') laser_dir = 'u';
+                        else if (laser_dir == 'l') laser_dir = 'd';
                     }
                     /* Backward mirror. */
-                    else
+                    else if (mirror_dir == 'b')
                     {
                         if (laser_dir == 'd') laser_dir = 'r';
                         else if (laser_dir == 'u') laser_dir = 'l';
-                        else if (laser_dir == 'r') laser_dir = 'u';
-                        else laser_dir = 'd';
+                        else if (laser_dir == 'r') laser_dir = 'd';
+                        else if (laser_dir == 'l') laser_dir = 'u';
                     }
                 }
 
