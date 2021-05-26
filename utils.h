@@ -92,7 +92,42 @@ void enemy_fire(bool* exit_flag, char** grid, int height, int width);
  * @param width number of columns in the grid. /*/
 void player_fire(bool* exit_flag, char** grid, int height, int width);
 
-/** Gets a valid menu choice from the user. */
+/** Returns true if the player is in the line of sight of the enemy tank.
+ * return false otherwise. 
+ * @param player_pos position of the player tank.
+ * @param enemy_pos position of the enemy tank.
+ * @param grid pointer to the 2D array of characters representing the map.
+ * @return true if player is in line of sight of the enemy tank,
+ * returns false otherwise.*/
+bool in_line_of_sight(pos_t player_pos, pos_t enemy_pos, char** grid);
+
+/** Attemps to make the player face to go one step upward. 
+ * @param grid pointer to the 2D array of characters representing the map. */
+void go_or_face_upward(char** grid);
+
+/** Attemps to make the player face to go one step upward. 
+ * @param grid pointer to the 2D array of characters representing map.
+ * @param height number of rows in the grid. */
+void go_or_face_downward(char** grid, int height);
+
+/** Attemps to make the player face to go one step rightward.
+ * @param grid pointer to the 2D array of characters representing the map. 
+ * @param width number of columns in the grid. */
+void go_or_face_rightward(char** grid, int width);
+
+/** Attemps to make the player face to go one step leftward. 
+ * @param grid pointer to the 2D array of characters representing the map. */
+void go_or_face_leftward(char** grid);
+
+/** Gets a valid menu choice from the user. 
+ * @return character representation of the menu choice.
+ * 
+ * w: to move upward.
+ * a: to move leftward.
+ * s: to move downward.
+ * d: to move rightward.
+ * f: to fire.
+ * l: to save game log. */
 char menu();
 
 #endif  /* UTILS_H */
