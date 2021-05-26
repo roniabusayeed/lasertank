@@ -44,6 +44,119 @@ bool in_line_of_sight(pos_t player_pos, pos_t enemy_pos, char** grid)
     return false;
 }
 
+/** Attemps to make the player face to go one step upward. */
+void go_or_face_upward(char** grid)
+{
+    extern pos_t player_pos;
+
+    /* If the player is not already facing upward. */
+    if (get_player_dir(grid[player_pos.x][player_pos.y]) != 'u')
+    {
+        /* Face upward. */
+        grid[player_pos.x][player_pos.y] = get_player('u');
+    }
+    /* Attemp to move one step upward. */
+    else
+    {
+        /* The player cannot go to the same position as that of the mirror. */
+        /* The player cannot go out of the boundary of the map. */
+        if (player_pos.x - 1 >= 0 && 
+        !is_mirror(grid[player_pos.x - 1][player_pos.y]) &&
+        !is_player(grid[player_pos.x - 1][player_pos.y]))
+        {
+            /* Move the player one step upward. */
+            grid[player_pos.x - 1][player_pos.y] = grid[player_pos.x][player_pos.y];
+            grid[player_pos.x][player_pos.y] = ' ';
+            player_pos.x--;
+        }
+    }
+}
+
+/** Attemps to make the player face to go one step upward. */
+void go_or_face_downward(char** grid, int height)
+{
+    extern pos_t player_pos;
+
+    /* If the player is not already facing downward. */
+    if (get_player_dir(grid[player_pos.x][player_pos.y]) != 'd')
+    {
+        /* Face downward. */
+        grid[player_pos.x][player_pos.y] = get_player('d');
+    }
+    /* Attemp to move one step downward. */
+    else
+    {
+        /* The player cannot go to the same position as that of the mirror. */
+        /* The player cannot go out of the boundary of the map. */
+        if (player_pos.x + 1 < height &&
+        !is_mirror(grid[player_pos.x + 1][player_pos.y]) &&
+        !is_player(grid[player_pos.x + 1][player_pos.y]))
+        {
+            /* Move the player one step downward. */
+            grid[player_pos.x + 1][player_pos.y] = grid[player_pos.x][player_pos.y];
+            grid[player_pos.x][player_pos.y] = ' ';
+            player_pos.x++;
+        }
+    }
+}
+
+/** Attemps to make the player face to go one step rightward. */
+void go_or_face_rightward(char** grid, int width)
+{
+    extern pos_t player_pos;
+
+    /* If the player is not already facing rightward. */
+    if (get_player_dir(grid[player_pos.x][player_pos.y]) != 'r')
+    {
+        /* Face rightward. */
+        grid[player_pos.x][player_pos.y] = get_player('r');
+    }
+    /* Attemp to move one step rightward. */
+    else
+    {
+        /* The player cannot go to the same position as that of the mirror. */
+        /* The player cannot go out of the boundary of the map. */
+        if (player_pos.y + 1 < width &&
+        !is_mirror(grid[player_pos.x][player_pos.y + 1]) &&
+        !is_player(grid[player_pos.x][player_pos.y + 1]))
+        {
+            /* Move the player one step rightward. */
+            grid[player_pos.x][player_pos.y + 1] = grid[player_pos.x][player_pos.y];
+            grid[player_pos.x][player_pos.y] = ' ';
+            player_pos.y++;
+        }
+    }
+}
+
+/** Attemps to make the player face to go one step leftward. */
+void go_or_face_leftward(char** grid)
+{
+    extern pos_t player_pos;
+
+    /* If the player is not already facing leftward. */
+    if (get_player_dir(grid[player_pos.x][player_pos.y]) != 'l')
+    {
+        /* Face leftward. */
+        grid[player_pos.x][player_pos.y] = get_player('l');
+    }
+    /* Attemp to move one step leftward. */
+    else
+    {
+        /* The player cannot go to the same position as that of the mirror. */
+        /* The player cannot go out of the boundary of the map. */
+        if (player_pos.y - 1 >= 0 &&
+        !is_mirror(grid[player_pos.x][player_pos.y - 1]) && 
+        !is_player(grid[player_pos.x][player_pos.y - 1]))
+        {
+            /* Move the player one step leftward. */
+            grid[player_pos.x][player_pos.y - 1] = grid[player_pos.x][player_pos.y];
+            grid[player_pos.x][player_pos.y] = ' ';
+            player_pos.y--;
+        }
+    }
+}
+
+
 /* Entry point of the program. */
 int main(int argc, char** argv)
 {
@@ -120,27 +233,7 @@ int main(int argc, char** argv)
         /* Go/face up. */
         if (menu_choice == 'w')
         {
-            /* If the player is not already facing upward. */
-            if (get_player_dir(grid[player_pos.x][player_pos.y]) != 'u')
-            {
-                /* Face upward. */
-                grid[player_pos.x][player_pos.y] = get_player('u');
-            }
-            /* Attemp to move one step upward. */
-            else
-            {
-                /* The player cannot go to the same position as that of the mirror. */
-                /* The player cannot go out of the boundary of the map. */
-                if (player_pos.x - 1 >= 0 && 
-                !is_mirror(grid[player_pos.x - 1][player_pos.y]) &&
-                !is_player(grid[player_pos.x - 1][player_pos.y]))
-                {
-                    /* Move the player one step upward. */
-                    grid[player_pos.x - 1][player_pos.y] = grid[player_pos.x][player_pos.y];
-                    grid[player_pos.x][player_pos.y] = ' ';
-                    player_pos.x--;
-                }
-            }
+            go_or_face_upward(grid);
             
             /* Log game. */
             insert_last(&game_log, grid, height, width);
@@ -148,27 +241,7 @@ int main(int argc, char** argv)
         /* Go/face down. */
         else if (menu_choice == 's')
         {
-            /* If the player is not already facing downward. */
-            if (get_player_dir(grid[player_pos.x][player_pos.y]) != 'd')
-            {
-                /* Face downward. */
-                grid[player_pos.x][player_pos.y] = get_player('d');
-            }
-            /* Attemp to move one step downward. */
-            else
-            {
-                /* The player cannot go to the same position as that of the mirror. */
-                /* The player cannot go out of the boundary of the map. */
-                if (player_pos.x + 1 < height &&
-                !is_mirror(grid[player_pos.x + 1][player_pos.y]) &&
-                !is_player(grid[player_pos.x + 1][player_pos.y]))
-                {
-                    /* Move the player one step downward. */
-                    grid[player_pos.x + 1][player_pos.y] = grid[player_pos.x][player_pos.y];
-                    grid[player_pos.x][player_pos.y] = ' ';
-                    player_pos.x++;
-                }
-            }
+            go_or_face_downward(grid, height);
 
             /* Log game. */
             insert_last(&game_log, grid, height, width);
@@ -176,27 +249,7 @@ int main(int argc, char** argv)
         /* Go/face right. */
         else if (menu_choice == 'd')
         {
-            /* If the player is not already facing rightward. */
-            if (get_player_dir(grid[player_pos.x][player_pos.y]) != 'r')
-            {
-                /* Face rightward. */
-                grid[player_pos.x][player_pos.y] = get_player('r');
-            }
-            /* Attemp to move one step rightward. */
-            else
-            {
-                /* The player cannot go to the same position as that of the mirror. */
-                /* The player cannot go out of the boundary of the map. */
-                if (player_pos.y + 1 < width &&
-                !is_mirror(grid[player_pos.x][player_pos.y + 1]) &&
-                !is_player(grid[player_pos.x][player_pos.y + 1]))
-                {
-                    /* Move the player one step rightward. */
-                    grid[player_pos.x][player_pos.y + 1] = grid[player_pos.x][player_pos.y];
-                    grid[player_pos.x][player_pos.y] = ' ';
-                    player_pos.y++;
-                }
-            }
+            go_or_face_rightward(grid, width);
 
             /* Log game. */
             insert_last(&game_log, grid, height, width);
@@ -204,27 +257,7 @@ int main(int argc, char** argv)
         /* Go/face left. */
         else if (menu_choice == 'a')
         {
-            /* If the player is not already facing leftward. */
-            if (get_player_dir(grid[player_pos.x][player_pos.y]) != 'l')
-            {
-                /* Face leftward. */
-                grid[player_pos.x][player_pos.y] = get_player('l');
-            }
-            /* Attemp to move one step leftward. */
-            else
-            {
-                /* The player cannot go to the same position as that of the mirror. */
-                /* The player cannot go out of the boundary of the map. */
-                if (player_pos.y - 1 >= 0 &&
-                !is_mirror(grid[player_pos.x][player_pos.y - 1]) && 
-                !is_player(grid[player_pos.x][player_pos.y - 1]))
-                {
-                    /* Move the player one step leftward. */
-                    grid[player_pos.x][player_pos.y - 1] = grid[player_pos.x][player_pos.y];
-                    grid[player_pos.x][player_pos.y] = ' ';
-                    player_pos.y--;
-                }
-            }
+            go_or_face_leftward(grid);
 
             /* Log game. */
             insert_last(&game_log, grid, height, width);
