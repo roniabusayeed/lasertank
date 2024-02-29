@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-Wall -pedantic -Werror -std=c89
+CFLAGS=-Wall -std=c99
 APP=laserTank
 
 ${APP}: main.c linkedlist.o sleep.o utils.o
