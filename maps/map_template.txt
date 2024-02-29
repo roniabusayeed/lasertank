@@ -1,0 +1,4 @@
+<height> <width>
+<x> <y> <dir>
+<x> <y> <dir: u/d/l/r>
+<x> <y> <dir: f/b>
